@@ -1,0 +1,67 @@
+<html>
+<head>
+  <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+</head>
+<body>
+<canvas id="myCanvas" width="200" height="150">
+  
+<script>
+  const API_KEY = '472032';
+  const SESSION_ID =
+    '1_MX40NzIwMzJ-fjE3MTA5NzEyMjc3NDl-TzcrL3NyU1N3ajZnSHQvKytTeEEwQVFvfn5-';
+  const TOKEN = 'T1==cGFydG5lcl9pZD00NzIwMzImc2lnPTg1NWY0ZmM3OGQzZjI2NzNiMDI2MTYyZWU3MjQyOThkZWY0MThmN2I6c2Vzc2lvbl9pZD0xX01YNDBOekl3TXpKLWZqRTNNVEE1TnpFeU1qYzNORGwtVHpjckwzTnlVMU4zYWpablNIUXZLeXRUZUVFd1FWRnZmbjUtJmNyZWF0ZV90aW1lPTE3MTA5NzEyMjgmbm9uY2U9MC43MDI3NTkyOTA3NDI5OTYmcm9sZT1tb2RlcmF0b3ImZXhwaXJlX3RpbWU9MTcxMzU2MzIyOCZpbml0aWFsX2xheW91dF9jbGFzc19saXN0PQ==';
+
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const shadeCanvas = () => {
+    const grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
+    grd.addColorStop(0, `oklab(40% ${Math.random()} ${Math.random()})`);
+    grd.addColorStop(1, 'orange');
+
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, 640, 480);
+  }
+
+  setInterval(shadeCanvas, 100);
+  const canvasStream = canvas.captureStream();
+  console.log(canvasStream);
+  const canvasMediaStreamTrack = canvasStream.getVideoTracks()[0];
+
+  const session = OT.initSession(API_KEY, SESSION_ID);
+
+  const publisher = OT.initPublisher(
+	  null,
+	  { videoSource: canvasMediaStreamTrack, insertDefaultUI: false }
+  );
+
+  session.connect(TOKEN, function(err) {
+    session.publish(publisher);
+  });
+
+  session.on('streamCreated', function(event) {
+    const subscriber = session.subscribe(event.stream, { insertDefaultUI: false });
+    subscriber.on('videoElementCreated', event => {
+      const subscriberVideoElement = event.element;
+      console.log(
+        'subscriberVideoElement created. MediaStream:',
+        subscriberVideoElement.srcObject
+      );
+      console.log(
+        'subscriberVideoElement created. MediaStreamTracks:',
+        subscriberVideoElement.srcObject.getTracks()
+      );
+      console.log(
+        'subscriberVideoElement created. Video MediaStreamTrack:',
+        subscriberVideoElement.srcObject.getVideoTracks()[0]
+      );
+      document.body.appendChild(subscriberVideoElement);
+      subscriberVideoElement.addEventListener('play', () => {
+        const subscriberTracks = subscriberVideoElement.srcObject.getTracks();
+        console.log('play subscriberTracks', subscriberTracks);
+      });
+    });
+  });
+</script>
+</body>
+</html>
