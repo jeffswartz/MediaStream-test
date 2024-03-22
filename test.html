@@ -42,23 +42,18 @@
   session.on('streamCreated', function(event) {
     const subscriber = session.subscribe(event.stream, { insertDefaultUI: false });
     subscriber.on('videoElementCreated', event => {
-      const subscriberVideoElement = event.element;
-      console.log(
-        'subscriberVideoElement created. MediaStream:',
-        subscriberVideoElement.srcObject
-      );
-      console.log(
-        'subscriberVideoElement created. MediaStreamTracks:',
-        subscriberVideoElement.srcObject.getTracks()
-      );
-      console.log(
-        'subscriberVideoElement created. Video MediaStreamTrack:',
-        subscriberVideoElement.srcObject.getVideoTracks()[0]
-      );
-      document.body.appendChild(subscriberVideoElement);
-      subscriberVideoElement.addEventListener('play', () => {
-        const subscriberTracks = subscriberVideoElement.srcObject.getTracks();
-        console.log('play subscriberTracks', subscriberTracks);
+      // Do not append event.element to the DOM:
+      // document.body.appendChild(event.element);
+      const myVideo = document.createElement('Video');
+      myVideo.style.border = "solid red 2px"
+      document.body.appendChild(myVideo);
+      myVideo.srcObject = event.element.srcObject;
+      myVideo.play()
+      event.element.addEventListener('play', () => {
+        console.log('subscriber MediaStream updated');
+	    console.log(34, myVideo)
+        myVideo.srcObject = event.element.srcObject;
+        myVideo.play();
       });
     });
   });
